@@ -27,7 +27,7 @@ def levenshtein_matriz(x, y, threshold=None):
             )
     return D[lenX, lenY]
 
-def levenshtein_reduccion(x, y):
+def levenshtein_reduccion(x, y, threshold=None):
     """
         Calcula la distancia de Levenshtein usando solo dos vectores columna.
     """

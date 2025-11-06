@@ -67,26 +67,32 @@ class SpellSuggester:
             distance (str): nombre del algoritmo de búsqueda a utilizar
             threshold (int): threshold para limitar la búsqueda
         """
+        # Asignar valores por defecto si no se proporcionan
         if distance is None:
             distance = self.default_distance
         if threshold is None:
             threshold = self.default_threshold
 
-        resul = []
-
+        # Obtener la función de distancia correcta del diccionario (importado de distancias_parte2)
         dist_func = opcionesSpell[distance]
 
+        # Crear una lista de listas para agrupar resultados por distancia.
+        # resul[i] contendrá todas las palabras a distancia 'i'.
+        resul = [[] for _ in range(threshold + 1)]
+
+        # Iterar por cada palabra en el vocabulario pre-cargado
         for word in self.vocabulary:
-            # Calcular distancia usando la optimización de threshold
+            # Calcular la distancia (las funciones optimizadas pararán si > threshold)
             dist = dist_func(term, word, threshold)
 
-            # Recopilar sugerencias
+            # Si la distancia es válida (menor o igual al umbral), añadirla a su grupo
             if dist <= threshold:
-                # Añadimos una lista [word] para que 'resul' sea lista de listas
-                resul.append([word])
-        
+                # Se añade como lista [word] para cumplir el formato que espera el test
+                resul[dist].append([word])
+
+        # Si flatten es True, convertir la lista de listas de listas a una lista simple de palabras
         if flatten:
-            resul = [word for wlist in resul for word in wlist]
+            # Comprensión de lista anidada para aplanar la estructura
+            resul = [word for dist_list in resul for word_list in dist_list for word in word_list]
             
         return resul
-

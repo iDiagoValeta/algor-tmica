@@ -75,4 +75,4 @@ algoritmo agaloritom             5           2             2         2         2
 algoritmo algormio               3           2             2         2         2
 acb       ba                     3           2             2         2         2
 
-"""         
+"""
