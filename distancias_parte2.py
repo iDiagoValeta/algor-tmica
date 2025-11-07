@@ -148,11 +148,116 @@ def levenshtein_cota_optimista(x, y, threshold):
 
 def damerau_restricted(x, y, threshold):
     # versión con reducción coste espacial y parada por threshold
-     return min(0,threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
+    lenX, lenY = len(x), len(y)
+
+    if abs(lenX - lenY) > threshold:
+        return threshold + 1
+
+    vprev2 = np.zeros(lenX + 1, dtype=np.int32)
+    vprev1 = np.zeros(lenX + 1, dtype=np.int32)
+    vcurrent = np.zeros(lenX + 1, dtype=np.int32)
+
+    for i in range(lenX + 1):
+        vprev1[i] = i
+
+    for j in range(1, lenY + 1):
+        vcurrent[0] = j
+        min_dist_en_columna = j
+
+        for i in range(1, lenX + 1):
+            
+            # Lógica de Levenshtein
+            coste_letra = 0 if x[i - 1] == y[j - 1] else 1
+            
+            borrado = vcurrent[i - 1] + 1
+            insercion = vprev1[i] + 1
+            sustitucion = vprev1[i - 1] + coste_letra
+
+            vcurrent[i] = min(borrado, insercion, sustitucion)
+
+            # Lógica de Damerau-Restringida
+            if i > 1 and j > 1 and x[i - 1] == y[j - 2] and x[i - 2] == y[j - 1]:
+                # Coste = D[i-2, j-2] + 1
+                coste_transposicion = vprev2[i - 2] + 1
+                vcurrent[i] = min(vcurrent[i], coste_transposicion)
+            
+            # Actualizamos el mínimo de la columna
+            if vcurrent[i] < min_dist_en_columna:
+                min_dist_en_columna = vcurrent[i]
+
+        # Parada por Threshold
+        if min_dist_en_columna > threshold:
+            return threshold + 1
+        
+        # Rotamos los vectores
+        vprev2, vprev1, vcurrent = vprev1, vcurrent, vprev2
+
+    final_dist = vprev1[lenX]
+
+    if final_dist > threshold:
+        return threshold + 1
+    else:
+        return final_dist
 
 def damerau_intermediate(x, y, threshold):
     # versión con reducción coste espacial y parada por threshold
-    return min(0,threshold+1) # COMPLETAR Y REEMPLAZAR ESTA PARTE
+    lenX, lenY = len(x), len(y)
+
+    if abs(lenX - lenY) > threshold:
+        return threshold + 1
+
+    vprev3 = np.zeros(lenX + 1, dtype=np.int32)
+    vprev2 = np.zeros(lenX + 1, dtype=np.int32)
+    vprev1 = np.zeros(lenX + 1, dtype=np.int32)
+    vcurrent = np.zeros(lenX + 1, dtype=np.int32)
+
+    for i in range(lenX + 1):
+        vprev1[i] = i
+
+    for j in range(1, lenY + 1):
+        vcurrent[0] = j
+        min_dist_en_columna = j
+
+        for i in range(1, lenX + 1):
+            
+            # Lógica de Levenshtein
+            coste_letra = 0 if x[i - 1] == y[j - 1] else 1
+            borrado = vcurrent[i - 1] + 1
+            insercion = vprev1[i] + 1
+            sustitucion = vprev1[i - 1] + coste_letra
+            vcurrent[i] = min(borrado, insercion, sustitucion)
+
+            # Lógica de Damerau-Restringida
+            if i > 1 and j > 1 and x[i - 1] == y[j - 2] and x[i - 2] == y[j - 1]:
+                coste_transposicion = vprev2[i - 2] + 1 # D[i-2, j-2] + 1
+                vcurrent[i] = min(vcurrent[i], coste_transposicion)
+            
+            # Lógica de Damerau-Intermedia
+            if i > 2 and j > 1 and x[i-1] == y[j-2] and x[i-3] == y[j-1]:
+                coste_intermedio_1 = vprev2[i-3] + 2 # D[i-3, j-2] + 2
+                vcurrent[i] = min(vcurrent[i], coste_intermedio_1)
+
+            if i > 1 and j > 2 and x[i-2] == y[j-1] and x[i-1] == y[j-3]:
+                coste_intermedio_2 = vprev3[i-2] + 2 # D[i-2, j-3] + 2
+                vcurrent[i] = min(vcurrent[i], coste_intermedio_2)
+
+            # Actualizamos el mínimo de la columna
+            if vcurrent[i] < min_dist_en_columna:
+                min_dist_en_columna = vcurrent[i]
+
+        # Parada por Threshold
+        if min_dist_en_columna > threshold:
+            return threshold + 1
+        
+        # Rotamos los vectores
+        vprev3, vprev2, vprev1, vcurrent = vprev2, vprev1, vcurrent, vprev3
+
+    final_dist = vprev1[lenX]
+
+    if final_dist > threshold:
+        return threshold + 1
+    else:
+        return final_dist
 
 opcionesSpell = {
     'levenshtein_m': levenshtein_matriz,
